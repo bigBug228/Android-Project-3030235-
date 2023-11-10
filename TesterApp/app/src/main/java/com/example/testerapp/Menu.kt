@@ -56,15 +56,21 @@ fun MenuApp(intent: Intent) {
 
     // Secondary color for text and button
     val LightTextColor = Color(0xFFFFFFFF)
+    //receive name from main activity
     var name by remember { mutableStateOf(intent.getStringExtra("User name") ?: "") }
+    //bool for switch button
     var isChecked by remember { mutableStateOf(false) }
+    //background color of menu which can be changed
     var backgroundColor by remember { mutableStateOf(Color(0xFF0081A7)) }
+    //string value which program passes to Test activity in order to change its background
     var stringColor by remember { mutableStateOf("") }
+    //context for intent
     val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor
     ) {
+        //make scrollable column for menu
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -82,7 +88,7 @@ fun MenuApp(intent: Intent) {
                 ) {
                     Text("Welcome, $name!", color = LightTextColor, fontSize = 24.sp)
                 }
-
+                //space between items
                 Divider()
             }
             item {
@@ -91,20 +97,21 @@ fun MenuApp(intent: Intent) {
                 Text("Settings", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = LightTextColor)
             }
             item {
+                //text field to edit name
                 TextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Edit Your Name",color = LightTextColor) },
                     modifier = Modifier.padding(16.dp),
                     colors = TextFieldDefaults.textFieldColors(
-                        containerColor = BlueGreenGradientEnd, // Use containerColor for Material 3
+                        containerColor = BlueGreenGradientEnd,
                         textColor = LightTextColor,
                         cursorColor = LightTextColor,
-                        // You might also want to set other colors like focusedLabelColor, unfocusedLabelColor etc.
                     )
                 )
             }
             item {
+                //switch for changing background color
                 Switch(
                     checked = isChecked,
                     onCheckedChange = {
@@ -135,12 +142,13 @@ fun MenuApp(intent: Intent) {
                             stringColor = "blue"
                         }
                         val newIntent = Intent(context, Test::class.java)
+                        //pass string color to Test activity 
                         newIntent.putExtra("background color", stringColor)
                         context.startActivity(newIntent)
                     },
                     modifier = Modifier.padding(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+                        containerColor = BlueGreenGradientEnd
                     )
                 ) {
                     Text("Start Test")
