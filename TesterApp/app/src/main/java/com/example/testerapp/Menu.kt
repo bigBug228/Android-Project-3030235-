@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 
 class Menu : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +77,7 @@ fun MenuApp(intent: Intent) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(BlueGreenGradientEnd)
+                        .background(backgroundColor)
                         .padding(16.dp)
                 ) {
                     Text("Welcome, $name!", color = Color.White, fontSize = 24.sp)
@@ -92,7 +94,7 @@ fun MenuApp(intent: Intent) {
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Edit Your Name") },
+                    label = { Text("Edit Your Name",color = LightTextColor) },
                     modifier = Modifier.padding(16.dp),
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = BlueGreenGradientEnd, // Use containerColor for Material 3
@@ -113,6 +115,12 @@ fun MenuApp(intent: Intent) {
                             backgroundColor = Color(0xFF0081A7)
                         }
                     },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = BlueGreenGradientEnd,
+                        checkedTrackColor = BlueGreenGradientEnd.copy(alpha = 0.5f),
+                        uncheckedThumbColor = DarkTextColor,
+                        uncheckedTrackColor = DarkTextColor.copy(alpha = 0.5f)
+                    ),
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -121,9 +129,9 @@ fun MenuApp(intent: Intent) {
                 // Start button
                 Button(
                     onClick = {
-                        if (backgroundColor == Color.Black) {
+                        if (backgroundColor == Color(0xFF002D62)) {
                             stringColor = "darkBlue"
-                        } else if (backgroundColor == Color.Magenta) {
+                        } else if (backgroundColor == Color(0xFF0081A7)) {
                             stringColor = "blue"
                         }
                         val newIntent = Intent(context, Test::class.java)
