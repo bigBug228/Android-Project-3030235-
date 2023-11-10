@@ -80,7 +80,7 @@ fun MenuApp(intent: Intent) {
                         .background(backgroundColor)
                         .padding(16.dp)
                 ) {
-                    Text("Welcome, $name!", color = Color.White, fontSize = 24.sp)
+                    Text("Welcome, $name!", color = LightTextColor, fontSize = 24.sp)
                 }
 
                 Divider()
@@ -130,7 +130,7 @@ fun MenuApp(intent: Intent) {
                 Button(
                     onClick = {
                         if (backgroundColor == Color(0xFF002D62)) {
-                            stringColor = "darkBlue"
+                            stringColor = "darkblue"
                         } else if (backgroundColor == Color(0xFF0081A7)) {
                             stringColor = "blue"
                         }
