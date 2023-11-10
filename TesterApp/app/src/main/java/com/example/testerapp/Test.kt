@@ -39,6 +39,8 @@ import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.RadioButtonDefaults
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 
 var score =0
 val BlueGreenGradientStart = Color(0xFF0081A7)
@@ -268,6 +270,7 @@ fun RadioQuestionScreen(navController: NavHostController) {
 }
 @Composable
 fun ResultScreen(navController: NavHostController) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -301,5 +304,23 @@ fun ResultScreen(navController: NavHostController) {
                 )
             )
         )
+        Spacer(Modifier.weight(1f))
+        Button(
+            onClick = {
+                score =0
+                val intent = Intent(context, Menu::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the activity stack
+                context.startActivity(intent)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+            ),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text("Finish", color = LightTextColor)
+        }
     }
 }
