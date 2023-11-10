@@ -38,6 +38,7 @@ import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.RadioButtonDefaults
 
 var score =0
 val BlueGreenGradientStart = Color(0xFF0081A7)
@@ -75,7 +76,7 @@ fun NavigationScreen(color:String) {
                 CheckboxQuestionScreen(navController = navController)
             }
             composable("question/3"){
-                //RadioQuestionScreen(navController = navController)
+                RadioQuestionScreen(navController = navController)
             }
             composable("question/4"){
                 //ResultScreen(navController = navController)
@@ -203,5 +204,65 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
                 Text("Next")
             }
         }
+    }
+}
+@Composable
+fun RadioQuestionScreen(navController: NavHostController) {
+    val options = listOf("Mars", "Venus", "Jupiter", "Saturn")
+    var selectedOption by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "Which planet is known as the Red Planet?",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = LightTextColor
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        options.forEach { option ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                RadioButton(
+                    selected = selectedOption == option,
+                    onClick = { selectedOption = option },
+                    modifier = Modifier.padding(8.dp),
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = BlueGreenGradientEnd,
+                        unselectedColor = BlueGreenGradientEnd.copy(alpha = 0.6f) // Optional: Adjust alpha for unselected state
+                    ),
+                )
+                Text(text = option,color = LightTextColor)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(
+                onClick = {
+                    if(selectedOption.equals("Mars",ignoreCase = true)){
+                        score+=1
+                    }
+                    navController.navigate("question/4")
+                },
+                modifier = Modifier.padding(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+                )
+            ) {
+                Text("Next")
+            }
+        }
+        // You can add logic to handle the end of questions here
     }
 }
