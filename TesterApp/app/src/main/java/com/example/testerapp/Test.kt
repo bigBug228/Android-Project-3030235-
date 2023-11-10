@@ -41,8 +41,9 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.RadioButtonDefaults
 import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
-
+//create variable to count correct answers
 var score =0
+//create values for colors which are used for design
 val BlueGreenGradientStart = Color(0xFF0081A7)
 val BlueGreenGradientEnd = Color(0xFF00BFA5)
 val AccentColor = Color(0xFFFF6B6B)
@@ -55,7 +56,9 @@ class Test : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            //get string value from menu activity which defines background color in test activity
             var color by remember { mutableStateOf(intent.getStringExtra("background color") ?: "") }
+            //call navigation screen function and pass color value to it
             NavigationScreen(color)
         }
     }
@@ -63,6 +66,7 @@ class Test : ComponentActivity() {
 @Composable
 fun NavigationScreen(color:String) {
     val navController = rememberNavController()
+    //logic for choosing background color for test activity
     var backgroundColor by remember { mutableStateOf(Color.White) }
     if(color =="darkblue"){
         backgroundColor = Color(0xFF002D62)
@@ -70,6 +74,7 @@ fun NavigationScreen(color:String) {
         backgroundColor = Color(0xFF0081A7)
     }
     Surface(modifier = Modifier.fillMaxSize(),color = backgroundColor) {
+        //use navigation system to move between screens. Each screen is a different question
         NavHost(navController = navController, startDestination = "question/1"){
             composable("question/1"){
                 StringQuestionScreen(navController = navController)
@@ -91,6 +96,7 @@ fun NavigationScreen(color:String) {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun StringQuestionScreen(navController: NavHostController) {
+    // create variable to store user answer
     var userAnswer by remember { mutableStateOf("") }
 
     Column(
@@ -107,15 +113,16 @@ fun StringQuestionScreen(navController: NavHostController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
+            //user will use this text field to answer question
             value = userAnswer,
             onValueChange = { userAnswer = it },
             label = { Text("Your Answer",color = LightTextColor) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = BlueGreenGradientEnd, // Use containerColor for Material 3
+                containerColor = BlueGreenGradientEnd,
                 textColor = LightTextColor,
                 cursorColor = LightTextColor,
-                // You might also want to set other colors like focusedLabelColor, unfocusedLabelColor etc.
+
             )
         )
 
@@ -124,8 +131,10 @@ fun StringQuestionScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            //button to move to the next question
             Button(
                 onClick = {
+                    //check user answer, if its correct, add 1 to score value
                     if(userAnswer.equals("Paris",ignoreCase = true)){
                         score +=1
                     }
@@ -143,7 +152,9 @@ fun StringQuestionScreen(navController: NavHostController) {
 }
 @Composable
 fun CheckboxQuestionScreen(navController: NavHostController) {
+    //list of all options for the user
     val options = listOf("Red", "Orange", "Yellow", "Green", "Blue", "Violet")
+    //create list of options which user selected
     val selectedOptions = remember { mutableStateListOf<String>() }
 
     Column(
@@ -152,6 +163,7 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        //text to specify task for the user
         Text(
             text = "Select the colors of the rainbow.",
             fontSize = 20.sp,
@@ -160,7 +172,7 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
 
         )
         Spacer(modifier = Modifier.height(16.dp))
-
+        //for each option from the list create checkbox with text
         options.forEach { option ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -168,6 +180,7 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
             ) {
                 Checkbox(
                     checked = selectedOptions.contains(option),
+                    //if user presses checkbox, this answer will be added to selected options list
                     onCheckedChange = { checked ->
                         if (checked) {
                             selectedOptions.add(option)
@@ -178,8 +191,8 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
                     modifier = Modifier.padding(8.dp),
                     colors = CheckboxDefaults.colors(
                         checkedColor = BlueGreenGradientEnd,
-                        uncheckedColor = BlueGreenGradientEnd.copy(alpha = 0.6f), // Optional: Adjust alpha for unchecked state
-                        checkmarkColor = LightTextColor // Optional: Adjust color of the checkmark if necessary
+                        uncheckedColor = BlueGreenGradientEnd.copy(alpha = 0.6f),
+                        checkmarkColor = LightTextColor
                     ),
                 )
                 Text(text = option,color = LightTextColor)
@@ -191,7 +204,9 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            //button to move to the next question
             Button(
+                //if selected options list has a size of six, score value will be +1
                 onClick = {
                     if(selectedOptions.size==6){
                         score+=1
@@ -210,7 +225,9 @@ fun CheckboxQuestionScreen(navController: NavHostController) {
 }
 @Composable
 fun RadioQuestionScreen(navController: NavHostController) {
+    //list of all options
     val options = listOf("Mars", "Venus", "Jupiter", "Saturn")
+    //option which user selected
     var selectedOption by remember { mutableStateOf("") }
 
     Column(
@@ -219,6 +236,7 @@ fun RadioQuestionScreen(navController: NavHostController) {
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        //text which will specify the task for the user
         Text(
             text = "Which planet is known as the Red Planet?",
             fontSize = 20.sp,
@@ -226,7 +244,7 @@ fun RadioQuestionScreen(navController: NavHostController) {
             color = LightTextColor
         )
         Spacer(modifier = Modifier.height(16.dp))
-
+        //for each option program creates radio button with text
         options.forEach { option ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -238,7 +256,7 @@ fun RadioQuestionScreen(navController: NavHostController) {
                     modifier = Modifier.padding(8.dp),
                     colors = RadioButtonDefaults.colors(
                         selectedColor = BlueGreenGradientEnd,
-                        unselectedColor = BlueGreenGradientEnd.copy(alpha = 0.6f) // Optional: Adjust alpha for unselected state
+                        unselectedColor = BlueGreenGradientEnd.copy(alpha = 0.6f)
                     ),
                 )
                 Text(text = option,color = LightTextColor)
@@ -250,8 +268,10 @@ fun RadioQuestionScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            //button to move to result screen
             Button(
                 onClick = {
+                    //if selected option equals to Mars, score + 1
                     if(selectedOption.equals("Mars",ignoreCase = true)){
                         score+=1
                     }
@@ -265,11 +285,11 @@ fun RadioQuestionScreen(navController: NavHostController) {
                 Text("Next")
             }
         }
-        // You can add logic to handle the end of questions here
     }
 }
 @Composable
 fun ResultScreen(navController: NavHostController) {
+    //context for intent which will start menu activity
     val context = LocalContext.current
     Column(
         modifier = Modifier
@@ -278,7 +298,7 @@ fun ResultScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Style the Text for the result
+        // Styl
         Text(
             "Final Result is $score",
             fontSize = 24.sp,
@@ -287,7 +307,7 @@ fun ResultScreen(navController: NavHostController) {
             modifier = Modifier.align(Alignment.CenterHorizontally) // Center horizontally in the Column
         )
 
-        // Modifier to ensure the KonfettiView fills the remaining space
+        //design element which created konfetti effect at the center of result screen for a few seconds
         KonfettiView(
             modifier = Modifier
                 .weight(1f)
@@ -305,6 +325,7 @@ fun ResultScreen(navController: NavHostController) {
             )
         )
         Spacer(Modifier.weight(1f))
+        //button which sets score back to zero and brings user back to menu activity. Can start test again
         Button(
             onClick = {
                 score =0
