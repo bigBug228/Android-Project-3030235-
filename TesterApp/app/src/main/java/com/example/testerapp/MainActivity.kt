@@ -28,6 +28,24 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextField
 import android.widget.Toast
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
+import android.content.Context
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.graphics.RectangleShape
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +66,51 @@ fun MyApp() {
     ) {
         DemoScreen()
 
+    }
+    // Define the primary colors from the logo
+    val BlueGreenGradientStart = Color(0xFF0081A7)
+    val BlueGreenGradientEnd = Color(0xFF00BFA5)
+    val AccentColor = Color(0xFFFF6B6B)
+    val NeutralColor = Color(0xFFF0F0F0)
+    val DarkTextColor = Color(0xFF002D62)
+
+// Secondary color for text and button
+    val LightTextColor = Color(0xFFFFFFFF)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextField(
+            label = { Text("Enter Your Name",
+                color = LightTextColor) },
+            value = name,
+            onValueChange = { name = it },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = BlueGreenGradientEnd, // Use containerColor for Material 3
+                textColor = LightTextColor,
+                cursorColor = LightTextColor,
+                // You might also want to set other colors like focusedLabelColor, unfocusedLabelColor etc.
+            )
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Button(
+            onClick = {
+                // onClick logic
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+            )
+        ) {
+            Text("Go to Menu Activity", color = LightTextColor)
+        }
     }
 }
 @Composable
