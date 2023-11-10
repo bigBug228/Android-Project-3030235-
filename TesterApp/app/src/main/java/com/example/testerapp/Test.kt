@@ -37,6 +37,7 @@ import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
+import androidx.compose.material3.CheckboxDefaults
 
 var score =0
 val BlueGreenGradientStart = Color(0xFF0081A7)
@@ -71,7 +72,7 @@ fun NavigationScreen(color:String) {
                 StringQuestionScreen(navController = navController)
             }
             composable("question/2"){
-                //CheckboxQuestionScreen(navController = navController)
+                CheckboxQuestionScreen(navController = navController)
             }
             composable("question/3"){
                 //RadioQuestionScreen(navController = navController)
@@ -126,6 +127,73 @@ fun StringQuestionScreen(navController: NavHostController) {
                         score +=1
                     }
                     navController.navigate("question/2")
+                },
+                modifier = Modifier.padding(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+                )
+            ) {
+                Text("Next")
+            }
+        }
+    }
+}
+@Composable
+fun CheckboxQuestionScreen(navController: NavHostController) {
+    val options = listOf("Red", "Orange", "Yellow", "Green", "Blue", "Violet")
+    val selectedOptions = remember { mutableStateListOf<String>() }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "Select the colors of the rainbow.",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = LightTextColor
+
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        options.forEach { option ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = selectedOptions.contains(option),
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            selectedOptions.add(option)
+                        } else {
+                            selectedOptions.remove(option)
+                        }
+                    },
+                    modifier = Modifier.padding(8.dp),
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = BlueGreenGradientEnd,
+                        uncheckedColor = BlueGreenGradientEnd.copy(alpha = 0.6f), // Optional: Adjust alpha for unchecked state
+                        checkmarkColor = LightTextColor // Optional: Adjust color of the checkmark if necessary
+                    ),
+                )
+                Text(text = option,color = LightTextColor)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(
+                onClick = {
+                    if(selectedOptions.size==6){
+                        score+=1
+                    }
+                    navController.navigate("question/3")
                 },
                 modifier = Modifier.padding(16.dp),
                 colors = ButtonDefaults.buttonColors(
