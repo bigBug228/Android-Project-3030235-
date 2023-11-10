@@ -142,7 +142,7 @@ fun MenuApp(intent: Intent) {
                             stringColor = "blue"
                         }
                         val newIntent = Intent(context, Test::class.java)
-                        //pass string color to Test activity 
+                        //pass string color to Test activity
                         newIntent.putExtra("background color", stringColor)
                         context.startActivity(newIntent)
                     },

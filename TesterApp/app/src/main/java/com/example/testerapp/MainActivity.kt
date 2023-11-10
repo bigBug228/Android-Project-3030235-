@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            //call MyApp function
             MyApp()
         }
     }
@@ -58,12 +59,14 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp() {
+    //create name variable to pass it to Menu activity
     var name by remember { mutableStateOf("") }
     val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        //call demo screen function to set image for the background
         DemoScreen()
 
     }
@@ -74,7 +77,7 @@ fun MyApp() {
     val NeutralColor = Color(0xFFF0F0F0)
     val DarkTextColor = Color(0xFF002D62)
 
-// Secondary color for text and button
+    // Secondary color for text and button
     val LightTextColor = Color(0xFFFFFFFF)
     Column(
         modifier = Modifier
@@ -83,6 +86,7 @@ fun MyApp() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        //text field to enter name
         TextField(
             label = { Text("Enter Your Name",
                 color = LightTextColor) },
@@ -101,8 +105,10 @@ fun MyApp() {
             )
         )
         Spacer(modifier = Modifier.weight(1f))
+        // Go to the menu activity button
         Button(
             onClick = {
+                //use intent to move to the Menu activity and pass name value to it
                 if (name.isNotEmpty()) {
                     val intent = Intent(context, Menu::class.java)
                     intent.putExtra("User name", name)
@@ -116,12 +122,13 @@ fun MyApp() {
                 containerColor = BlueGreenGradientEnd // Use containerColor for the button background
             )
         ) {
-            Text("Go to Menu Activity", color = LightTextColor)
+            Text("Go to Menu", color = LightTextColor)
         }
     }
 }
 @Composable
 fun DemoScreen(){
+    //create function which adds image to the background of main activity
     Box(modifier = Modifier.fillMaxSize()){
         Image(painter = painterResource(id = R.drawable.minima),
             contentDescription = "backgroundImage",
