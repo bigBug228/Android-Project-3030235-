@@ -38,7 +38,106 @@ class Menu : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            MenuApp(intent)
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MenuApp(intent: Intent) {
+    // Define the primary colors from the logo
+    val BlueGreenGradientStart = Color(0xFF0081A7)
+    val BlueGreenGradientEnd = Color(0xFF00BFA5)
+    val AccentColor = Color(0xFFFF6B6B)
+    val NeutralColor = Color(0xFFF0F0F0)
+    val DarkTextColor = Color(0xFF002D62)
 
+    // Secondary color for text and button
+    val LightTextColor = Color(0xFFFFFFFF)
+    var name by remember { mutableStateOf(intent.getStringExtra("User name") ?: "") }
+    var isChecked by remember { mutableStateOf(false) }
+    var backgroundColor by remember { mutableStateOf(Color(0xFF0081A7)) }
+    var stringColor by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Welcome message
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BlueGreenGradientEnd)
+                        .padding(16.dp)
+                ) {
+                    Text("Welcome, $name!", color = Color.White, fontSize = 24.sp)
+                }
+
+                Divider()
+            }
+            item {
+
+                // Settings section
+                Text("Settings", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = LightTextColor)
+            }
+            item {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Edit Your Name") },
+                    modifier = Modifier.padding(16.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = BlueGreenGradientEnd, // Use containerColor for Material 3
+                        textColor = LightTextColor,
+                        cursorColor = LightTextColor,
+                        // You might also want to set other colors like focusedLabelColor, unfocusedLabelColor etc.
+                    )
+                )
+            }
+            item {
+                Switch(
+                    checked = isChecked,
+                    onCheckedChange = {
+                        isChecked = it
+                        if (it) {
+                            backgroundColor = Color(0xFF002D62)
+                        } else {
+                            backgroundColor = Color(0xFF0081A7)
+                        }
+                    },
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            item {
+
+                // Start button
+                Button(
+                    onClick = {
+                        if (backgroundColor == Color.Black) {
+                            stringColor = "darkBlue"
+                        } else if (backgroundColor == Color.Magenta) {
+                            stringColor = "blue"
+                        }
+                        val newIntent = Intent(context, Test::class.java)
+                        newIntent.putExtra("background color", stringColor)
+                        context.startActivity(newIntent)
+                    },
+                    modifier = Modifier.padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+                    )
+                ) {
+                    Text("Start Test")
+                }
+            }
         }
     }
 }

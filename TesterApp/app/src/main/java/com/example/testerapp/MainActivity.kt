@@ -103,7 +103,14 @@ fun MyApp() {
         Spacer(modifier = Modifier.weight(1f))
         Button(
             onClick = {
-                // onClick logic
+                if (name.isNotEmpty()) {
+                    val intent = Intent(context, Menu::class.java)
+                    intent.putExtra("User name", name)
+                    context.startActivity(intent)
+                } else {
+                    // Handle empty name input
+                    Toast.makeText(context, "Please enter your name", Toast.LENGTH_SHORT).show()
+                }
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = BlueGreenGradientEnd // Use containerColor for the button background
