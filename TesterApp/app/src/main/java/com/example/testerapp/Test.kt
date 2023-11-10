@@ -79,7 +79,7 @@ fun NavigationScreen(color:String) {
                 RadioQuestionScreen(navController = navController)
             }
             composable("question/4"){
-                //ResultScreen(navController = navController)
+                ResultScreen(navController = navController)
             }
 
         }
@@ -264,5 +264,42 @@ fun RadioQuestionScreen(navController: NavHostController) {
             }
         }
         // You can add logic to handle the end of questions here
+    }
+}
+@Composable
+fun ResultScreen(navController: NavHostController) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Style the Text for the result
+        Text(
+            "Final Result is $score",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = LightTextColor,
+            modifier = Modifier.align(Alignment.CenterHorizontally) // Center horizontally in the Column
+        )
+
+        // Modifier to ensure the KonfettiView fills the remaining space
+        KonfettiView(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            parties = listOf(
+                Party(
+                    speed = 4f,
+                    maxSpeed = 30f,
+                    damping = 0.9f,
+                    spread = 360,
+                    colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                    position = Position.Relative(0.5, 0.5), // Centered
+                    emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
+                )
+            )
+        )
     }
 }
