@@ -43,6 +43,7 @@ import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 //create variable to count correct answers
 var score =0
+var isAnswered = false
 //create values for colors which are used for design
 val BlueGreenGradientStart = Color(0xFF0081A7)
 val BlueGreenGradientEnd = Color(0xFF00BFA5)
