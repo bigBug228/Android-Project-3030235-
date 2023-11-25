@@ -35,10 +35,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import android.content.Context
 
 class Menu : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             MenuApp(intent)
         }
@@ -47,6 +49,7 @@ class Menu : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuApp(intent: Intent) {
+
     // Define the primary colors from the logo
     val BlueGreenGradientStart = Color(0xFF0081A7)
     val BlueGreenGradientEnd = Color(0xFF00BFA5)
@@ -61,11 +64,15 @@ fun MenuApp(intent: Intent) {
     //bool for switch button
     var isChecked by remember { mutableStateOf(false) }
     //background color of menu which can be changed
-    var backgroundColor by remember { mutableStateOf(Color(0xFF0081A7)) }
+    //var backgroundColor by remember { mutableStateOf(Color(0xFF0081A7)) }
     //string value which program passes to Test activity in order to change its background
     var stringColor by remember { mutableStateOf("") }
     //context for intent
     val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+    val defaultColor = android.graphics.Color.WHITE // Default color if not set
+    val backgroundColorInt = sharedPref.getInt("BackgroundColor", defaultColor)
+    var backgroundColor by remember { mutableStateOf(Color(backgroundColorInt)) }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor
@@ -119,7 +126,7 @@ fun MenuApp(intent: Intent) {
                         if (it) {
                             backgroundColor = Color(0xFF002D62)
                         } else {
-                            backgroundColor = Color(0xFF0081A7)
+                            backgroundColor = Color(backgroundColorInt)
                         }
                     },
                     colors = SwitchDefaults.colors(
@@ -138,12 +145,13 @@ fun MenuApp(intent: Intent) {
                     onClick = {
                         if (backgroundColor == Color(0xFF002D62)) {
                             stringColor = "darkblue"
-                        } else if (backgroundColor == Color(0xFF0081A7)) {
+                        } else if (backgroundColor == Color(backgroundColorInt)) {
                             stringColor = "blue"
                         }
                         val newIntent = Intent(context, Test::class.java)
                         //pass string color to Test activity
                         newIntent.putExtra("background color", stringColor)
+                        newIntent.putExtra("User name", name)
                         context.startActivity(newIntent)
                     },
                     modifier = Modifier.padding(16.dp),

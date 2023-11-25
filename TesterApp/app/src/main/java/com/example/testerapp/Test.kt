@@ -1,5 +1,6 @@
 package com.example.testerapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -59,20 +60,26 @@ class Test : ComponentActivity() {
         setContent {
             //get string value from menu activity which defines background color in test activity
             var color by remember { mutableStateOf(intent.getStringExtra("background color") ?: "") }
+            var name by remember { mutableStateOf(intent.getStringExtra("User name") ?: "") }
             //call navigation screen function and pass color value to it
-            NavigationScreen(color)
+            NavigationScreen(color,name)
         }
     }
 }
 @Composable
-fun NavigationScreen(color:String) {
+fun NavigationScreen(color:String,name:String) {
+    val context = LocalContext.current
+    val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+    val defaultColor = android.graphics.Color.WHITE // Default color if not set
+    val backgroundColorInt = sharedPref.getInt("BackgroundColor", defaultColor)
+    var backgroundColor by remember { mutableStateOf(Color(backgroundColorInt)) }
     val navController = rememberNavController()
     //logic for choosing background color for test activity
-    var backgroundColor by remember { mutableStateOf(Color.White) }
+    //var backgroundColor by remember { mutableStateOf(Color.White) }
     if(color =="darkblue"){
         backgroundColor = Color(0xFF002D62)
     }else if (color =="blue"){
-        backgroundColor = Color(0xFF0081A7)
+        backgroundColor = Color(backgroundColorInt)
     }
     Surface(modifier = Modifier.fillMaxSize(),color = backgroundColor) {
         //use navigation system to move between screens. Each screen is a different question
@@ -87,7 +94,7 @@ fun NavigationScreen(color:String) {
                 RadioQuestionScreen(navController = navController)
             }
             composable("question/4"){
-                ResultScreen(navController = navController)
+                ResultScreen(navController = navController,name)
             }
 
         }
@@ -289,7 +296,7 @@ fun RadioQuestionScreen(navController: NavHostController) {
     }
 }
 @Composable
-fun ResultScreen(navController: NavHostController) {
+fun ResultScreen(navController: NavHostController,name: String) {
     //context for intent which will start menu activity
     val context = LocalContext.current
     Column(
@@ -331,6 +338,7 @@ fun ResultScreen(navController: NavHostController) {
             onClick = {
                 score =0
                 val intent = Intent(context, Menu::class.java)
+                intent.putExtra("User name", name)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the activity stack
                 context.startActivity(intent)
             },

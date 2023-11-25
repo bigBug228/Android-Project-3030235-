@@ -44,30 +44,68 @@ import android.content.Context
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.graphics.RectangleShape
+import android.hardware.SensorManager
+import android.hardware.Sensor
+import android.hardware.SensorEventListener
+import android.hardware.SensorEvent
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 
 
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val context = LocalContext.current
+            val sensorManager : SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            val deviceSensors : List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
+            if(sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)!=null) {
+
+                val temperature = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+                sensorManager.registerListener(
+                    sensorEventListener,
+                    temperature,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+                //Text("temperature " + temp.value.toString())
+            }
+
             //call MyApp function
-            MyApp()
+            MyApp(temp.value.toString())
+        }
+    }
+    var temp = mutableStateOf(0f)
+
+    private val sensorEventListener : SensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if(event?.sensor?.type == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                temp.value = event.values[0]
+            }
+        }
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+            // Implement this if needed
         }
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyApp() {
+fun MyApp(temperature : String) {
     //create name variable to pass it to Menu activity
     var name by remember { mutableStateOf("") }
     val context = LocalContext.current
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         //call demo screen function to set image for the background
-        DemoScreen()
+        DemoScreen(temperature)
 
     }
     // Define the primary colors from the logo
@@ -86,6 +124,10 @@ fun MyApp() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+//        for(sensor in deviceSensors)
+//        {
+            //Text(sensor.name)
+//        }
         //text field to enter name
         TextField(
             label = { Text("Enter Your Name",
@@ -127,13 +169,58 @@ fun MyApp() {
     }
 }
 @Composable
-fun DemoScreen(){
-    //create function which adds image to the background of main activity
-    Box(modifier = Modifier.fillMaxSize()){
-        Image(painter = painterResource(id = R.drawable.minima),
+fun DemoScreen(temperature: String) {
+    val context = LocalContext.current
+    // convert temperature to the float value
+    val tempValue = temperature.toFloatOrNull() ?: 0f
+
+    // this code normalizes temperature to range [0,1]
+    val normalizedTemp = (tempValue + 40) / 80 // [-40 to 40] degrees range
+
+    // implementing interpolation between blue and yellow according to the temperature
+    val interpolatedColor = lerpColor(Color(0xFF00BFFF), Color(0xFFFFD700), normalizedTemp)
+
+    // implement animation of the transition between colours
+    val animatedColor by animateColorAsState(targetValue = interpolatedColor)
+    // Convert color to an integer
+    val colorInt = android.graphics.Color.argb(
+        (animatedColor.alpha * 255).toInt(),
+        (animatedColor.red * 255).toInt(),
+        (animatedColor.green * 255).toInt(),
+        (animatedColor.blue * 255).toInt()
+    )
+
+    // Save the color in shared preferences
+    val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+    with(sharedPref.edit()) {
+        putInt("BackgroundColor", colorInt)
+        apply()
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.minima),
             contentDescription = "backgroundImage",
             contentScale = ContentScale.FillBounds,
-            modifier = Modifier.matchParentSize()
+            modifier = Modifier.matchParentSize(),
+            colorFilter = ColorFilter.tint(animatedColor, BlendMode.Overlay) // overlay blend mode
         )
     }
+}
+
+// create function in order to interpolate between colors
+fun lerpColor(colorStart: Color, colorEnd: Color, fraction: Float): Color {
+    return Color(
+        red = lerp(colorStart.red, colorEnd.red, fraction),
+        green = lerp(colorStart.green, colorEnd.green, fraction),
+        blue = lerp(colorStart.blue, colorEnd.blue, fraction),
+        alpha = 1f //  alpha as equal to 1 to keep image visible
+    )
+}
+
+// interpolate between two values using this function
+fun lerp(startValue: Float, endValue: Float, fraction: Float): Float {
+    // clamping the fraction between 0f and 1f
+    val clampedFraction = fraction.coerceIn(0f, 1f)
+    return startValue + (endValue - startValue) * clampedFraction
 }
