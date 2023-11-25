@@ -565,7 +565,7 @@ fun RadioImageQuestionScreen(navController: NavHostController) {
             //button to move to result screen
             Button(
                 onClick = {
-                    //if selected option equals to France, score + 1
+                    //if selected option equals to Ireland, score + 1
                     if(selectedOption.equals("Ireland",ignoreCase = true)){
                         score+=1
                     }

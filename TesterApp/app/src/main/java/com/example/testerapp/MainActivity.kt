@@ -182,7 +182,7 @@ fun DemoScreen(temperature: String) {
 
     // implement animation of the transition between colours
     val animatedColor by animateColorAsState(targetValue = interpolatedColor)
-    // Convert color to an integer
+    // convert color to integer
     val colorInt = android.graphics.Color.argb(
         (animatedColor.alpha * 255).toInt(),
         (animatedColor.red * 255).toInt(),
@@ -190,7 +190,7 @@ fun DemoScreen(temperature: String) {
         (animatedColor.blue * 255).toInt()
     )
 
-    // Save the color in shared preferences
+    // save color in shared preferences
     val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     with(sharedPref.edit()) {
         putInt("BackgroundColor", colorInt)
