@@ -69,6 +69,7 @@ fun MenuApp(intent: Intent) {
     var stringColor by remember { mutableStateOf("") }
     //context for intent
     val context = LocalContext.current
+    //get colour from shared preferences
     val sharedPref = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     val defaultColor = android.graphics.Color.WHITE // Default color if not set
     val backgroundColorInt = sharedPref.getInt("BackgroundColor", defaultColor)
