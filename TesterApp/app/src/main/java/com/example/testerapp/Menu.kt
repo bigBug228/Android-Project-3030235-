@@ -36,10 +36,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.content.ContentValues
 
+private var data = mutableStateOf("Empty database")
+private lateinit var databaseManager: DatabaseManager
+private lateinit var database : SQLiteDatabase
 class Menu : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        databaseManager = DatabaseManager(this,"withScoreMenu.db",null,1)
+        database = databaseManager.writableDatabase
 
         setContent {
             MenuApp(intent)
@@ -61,6 +68,9 @@ fun MenuApp(intent: Intent) {
     val LightTextColor = Color(0xFFFFFFFF)
     //receive name from main activity
     var name by remember { mutableStateOf(intent.getStringExtra("User name") ?: "") }
+//    val currentName = retrieveName(name)
+    var score by remember {mutableStateOf(retrieveScore(name))}
+    var warningMessage by remember { mutableStateOf("") }
     //bool for switch button
     var isChecked by remember { mutableStateOf(false) }
     //background color of menu which can be changed
@@ -97,7 +107,19 @@ fun MenuApp(intent: Intent) {
                     Text("Welcome, $name!", color = LightTextColor, fontSize = 24.sp)
                 }
                 //space between items
-                Divider()
+                Divider(color = LightTextColor)
+            }
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(backgroundColor)
+                        .padding(16.dp)
+                ) {
+                    Text("Your current score is $score", color = LightTextColor, fontSize = 24.sp)
+                }
+                //space between items
+                Divider(color = LightTextColor)
             }
             item {
 
@@ -108,7 +130,17 @@ fun MenuApp(intent: Intent) {
                 //text field to edit name
                 TextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = { name = it
+                        warningMessage = "" // Reset warning message
+
+                        // Check if the name exists in the database
+                        if (isNamePresent(name) && (name != (intent.getStringExtra("User name") ?: ""))) {
+                            warningMessage = "Name already exists. Please choose a different name."
+                        }
+                        if(name.isBlank()){
+                            warningMessage = "Name field is empty. Please choose a name."
+                        }
+                                    },
                     label = { Text("Edit Your Name",color = LightTextColor) },
                     modifier = Modifier.padding(16.dp),
                     colors = TextFieldDefaults.textFieldColors(
@@ -117,6 +149,15 @@ fun MenuApp(intent: Intent) {
                         cursorColor = LightTextColor,
                     )
                 )
+            }
+            if (warningMessage.isNotEmpty()) {
+                item {
+                    Text(
+                        text = warningMessage,
+                        color = Color.Red, // or any warning color
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
             item {
                 //switch for changing background color
@@ -140,8 +181,6 @@ fun MenuApp(intent: Intent) {
                 )
             }
             item {
-
-                // Start button
                 Button(
                     onClick = {
                         if (backgroundColor == Color(0xFF002D62)) {
@@ -149,21 +188,126 @@ fun MenuApp(intent: Intent) {
                         } else if (backgroundColor == Color(backgroundColorInt)) {
                             stringColor = "blue"
                         }
-                        val newIntent = Intent(context, Test::class.java)
-                        //pass string color to Test activity
-                        newIntent.putExtra("background color", stringColor)
-                        newIntent.putExtra("User name", name)
-                        context.startActivity(newIntent)
+
+                        val nameUpdateSuccess = updateNameIfNewNameNotExists(intent.getStringExtra("User name") ?: "", name)
+
+                        if (nameUpdateSuccess) {
+                            // name was successfully updated, proceed
+                            val newIntent = Intent(context, Test::class.java)
+                            newIntent.putExtra("background color", stringColor)
+                            newIntent.putExtra("User name", name)
+                            context.startActivity(newIntent)
+                        } else {
+                            // name update failed (name already exists or text field is empty), reset name to current name
+                            val newIntent = Intent(context, Test::class.java)
+                            newIntent.putExtra("background color", stringColor)
+                            newIntent.putExtra("User name",intent.getStringExtra("User name") ?: "")
+                            context.startActivity(newIntent)
+
+                            // Possibly show a message to the user that the name is already in use
+                        }
                     },
                     modifier = Modifier.padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BlueGreenGradientEnd
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = BlueGreenGradientEnd)
                 ) {
                     Text("Start Test")
+                }
+            }
+            item {
+                //button which brings user back to main activity
+                Button(
+                    onClick = {
+                        updateNameIfNewNameNotExists(intent.getStringExtra("User name") ?: "", name)
+                        val backIntent = Intent(context, MainActivity::class.java)
+                        context.startActivity(backIntent)
+                    },
+                    modifier = Modifier.padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = BlueGreenGradientEnd) // Red for delete
+                ) {
+                    Text("LogOut", color = Color.White)
+                }
+            }
+            item {
+                //button which brings user back to main activity and deletes his/her account from database
+                Button(
+                    onClick = {
+                       deleteAccount(intent.getStringExtra("User name") ?: "")
+                        val backIntent = Intent(context, MainActivity::class.java)
+                        context.startActivity(backIntent)
+
+                    },
+                    modifier = Modifier.padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red) // Red for delete
+                ) {
+                    Text("Delete Account", color = Color.White)
                 }
             }
         }
     }
 }
+//function which returns current score of current user
+private fun retrieveScore(userName: String): Int? {
+    //define column which will be retrieved from database
+    val columns = arrayOf("Score")
+    //specify search criteria
+    val selection = "Name = ?"
+    //replace placeholder in selection
+    val selectionArgs = arrayOf(userName)
+    val cursor = database.query("Test", columns, selection, selectionArgs, null, null, null)
 
+    var score: Int? = null
+    if (cursor.moveToFirst()) {
+        //if user exists, get its score value from Score column
+        score = cursor.getInt(cursor.getColumnIndexOrThrow("Score"))
+    }
+    cursor.close()
+    //return integer score value
+    return score
+}
+
+//function to update name of the user
+private fun updateNameIfNewNameNotExists(currentName: String, newName: String): Boolean {
+    // check if new name already exists and its not empty
+    if (newName.isNotBlank() &&!isNamePresent(newName)) {
+        // new name does not exist and its not empty. Now proceed with update
+        val contentValues = ContentValues().apply {
+            //insert new name into content values
+            put("Name", newName)
+        }
+        //create where clause in order to specify which row to update
+        val whereClause = "Name = ?"
+        //specify current name as argument for where clause
+        val whereArgs = arrayOf(currentName)
+        //perform update operation
+        val rowsUpdated = database.update("Test", contentValues, whereClause, whereArgs)
+        // return true if any row was updated
+        return rowsUpdated > 0
+    } else {
+        // return false because new name already exists
+        return false
+    }
+}
+//same function as from the main activity which checks if name already exists in database
+private fun isNamePresent(name: String): Boolean {
+    val columns = arrayOf("Name")
+    val selection = "Name = ?"
+    val selectionArgs = arrayOf(name)
+    //query database to find records matching criteria
+    val cursor = database.query("Test", columns, selection, selectionArgs, null, null, null)
+
+    val exists = cursor.moveToFirst() // check if cursor is not empty
+    cursor.close()
+
+    return exists
+}
+//function which deletes user from database
+private fun deleteAccount(userName: String): Boolean {
+    //create where clause in order to specify which rows to delete
+    val whereClause = "Name = ?"
+    //specify user name to delete
+    val whereArgs = arrayOf(userName)
+    //exec delete operation
+    val rowsDeleted = database.delete("Test", whereClause, whereArgs)
+
+    return rowsDeleted > 0 // return true if any row was deleted
+}

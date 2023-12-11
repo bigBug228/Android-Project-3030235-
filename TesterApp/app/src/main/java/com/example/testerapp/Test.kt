@@ -41,10 +41,15 @@ import java.util.concurrent.TimeUnit
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.RadioButtonDefaults
 import android.content.Intent
+import android.database.sqlite.SQLiteDatabase
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.size
+import android.content.ContentValues
+private var data = mutableStateOf("Empty database")
+private lateinit var databaseManager: DatabaseManager
+private lateinit var database : SQLiteDatabase
 //create variable to count correct answers
 var score =0
 var isAnswered = false
@@ -60,6 +65,8 @@ val LightTextColor = Color(0xFFFFFFFF)
 class Test : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        databaseManager = DatabaseManager(this,"withScoreMenu.db",null,1)
+        database = databaseManager.writableDatabase
         setContent {
             //get string value from menu activity which defines background color in test activity
             var color by remember { mutableStateOf(intent.getStringExtra("background color") ?: "") }
@@ -431,7 +438,7 @@ fun RadioQuestionScreen(navController: NavHostController) {
                     if(selectedOption.equals("Mars",ignoreCase = true)){
                         score+=1
                     }
-                    navController.navigate("question/6")
+                    navController.navigate("question/7")
                 },
                 modifier = Modifier.padding(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -496,7 +503,7 @@ fun RadioTwoQuestionScreen(navController: NavHostController) {
                     if(selectedOption.equals("France",ignoreCase = true)){
                         score+=1
                     }
-                    navController.navigate("question/7")
+                    navController.navigate("question/8")
                 },
                 modifier = Modifier.padding(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -512,7 +519,7 @@ fun RadioTwoQuestionScreen(navController: NavHostController) {
 fun RadioImageQuestionScreen(navController: NavHostController) {
     //list of all options
     val optionsWithImages = listOf(
-        "USA" to R.drawable.usa,
+        "USA" to R.drawable.france,
         "UK" to R.drawable.uk,
         "Ireland" to R.drawable.ireland,
         "France" to R.drawable.france
@@ -570,7 +577,7 @@ fun RadioImageQuestionScreen(navController: NavHostController) {
                     if(selectedOption.equals("Ireland",ignoreCase = true)){
                         score+=1
                     }
-                    navController.navigate("question/8")
+                    navController.navigate("question/6")
                 },
                 modifier = Modifier.padding(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -587,6 +594,7 @@ fun RadioImageQuestionScreen(navController: NavHostController) {
 fun ResultScreen(navController: NavHostController,name: String) {
     //context for intent which will start menu activity
     val context = LocalContext.current
+    updateScore(name, score)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -643,4 +651,18 @@ fun ResultScreen(navController: NavHostController,name: String) {
         }
     }
 }
+//function which updates score of the current user in the database
+private fun updateScore(name: String, newScore: Int) {
+    val contentValues = ContentValues().apply {
+        //insert new score into content values
+        put("Score", newScore)
+    }
+    //create where clause in order to specify which row to update
+    val whereClause = "Name = ?"
+    //specify current name as argument for where clause
+    val whereArgs = arrayOf(name)
+    //perform update operation
+    database.update("Test", contentValues, whereClause, whereArgs)
+}
+
 

@@ -41,6 +41,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.graphics.RectangleShape
@@ -54,13 +55,22 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
+import android.content.ContentValues
+import android.database.Cursor
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.material3.Divider
+import java.lang.StringBuilder
 
 
-
+private var data = mutableStateOf("Empty database")
+private lateinit var databaseManager: DatabaseManager
+private lateinit var database : SQLiteDatabase
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        databaseManager = DatabaseManager(this,"withScoreMenu.db",null,1)
+        database = databaseManager.writableDatabase
         setContent {
             val context = LocalContext.current
             val sensorManager : SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -75,9 +85,10 @@ class MainActivity : ComponentActivity() {
                 )
                 //Text("temperature " + temp.value.toString())
             }
+            val finalDataBase = retrieveData()
 
             //call MyApp function
-            MyApp(temp.value.toString())
+            MyApp(temp.value.toString(),finalDataBase.toString())
         }
     }
     var temp = mutableStateOf(0f)
@@ -89,13 +100,47 @@ class MainActivity : ComponentActivity() {
             }
         }
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-            // Implement this if needed
+            // implement this if needed
         }
+    }
+private fun retrieveData(): List<Pair<String, Int>> {
+    val dataList = mutableListOf<Pair<String, Int>>()
+    val columns = arrayOf("Name", "Score")
+    val cursor = database.query("Test", columns, null, null, null, null, null)
+
+    while (cursor.moveToNext()) {
+        val name = cursor.getString(cursor.getColumnIndexOrThrow("Name"))
+        val score = cursor.getInt(cursor.getColumnIndexOrThrow("Score"))
+        dataList.add(Pair(name, score))
+    }
+    cursor.close()
+
+    return dataList
+}
+    private fun addData() {
+        val row: ContentValues = ContentValues().apply {
+            put("Name", "Tom")
+            // Score will be set to its default value of 0
+        }
+        val row2: ContentValues = ContentValues().apply {
+            put("Name", "Ann")
+            // Score will be set to its default value of 0
+        }
+        database.insert("Test", null, row)
+        database.insert("Test", null, row2)
+    }
+    private fun updateName(id: Int, newName: String) {
+        val contentValues = ContentValues().apply {
+            put("Name", newName)
+        }
+        val whereClause = "Id = ?"
+        val whereArgs = arrayOf(id.toString())
+        database.update("Test", contentValues, whereClause, whereArgs)
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyApp(temperature : String) {
+fun MyApp(temperature : String,stringDatabase: String) {
     //create name variable to pass it to Menu activity
     var name by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -146,6 +191,20 @@ fun MyApp(temperature : String) {
                 // You might also want to set other colors like focusedLabelColor, unfocusedLabelColor etc.
             )
         )
+        Button(
+            onClick = {
+                //use intent to move to the Menu activity and pass name value to it
+                val intent = Intent(context, Results::class.java)
+                context.startActivity(intent)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BlueGreenGradientEnd // Use containerColor for the button background
+            )
+        ) {
+            Text("ShowAllResults", color = LightTextColor)
+            //Text(stringDatabase, color = LightTextColor)
+
+        }
         Spacer(modifier = Modifier.weight(1f))
         // Go to the menu activity button
         Button(
@@ -153,6 +212,8 @@ fun MyApp(temperature : String) {
                 //use intent to move to the Menu activity and pass name value to it
                 if (name.isNotEmpty()) {
                     val intent = Intent(context, Menu::class.java)
+                    //add new name to database if it does not exists there
+                    addDataIfNotExists(name)
                     intent.putExtra("User name", name)
                     context.startActivity(intent)
                 } else {
@@ -165,8 +226,42 @@ fun MyApp(temperature : String) {
             )
         ) {
             Text("Go to Menu", color = LightTextColor)
+            //Text(stringDatabase, color = LightTextColor)
         }
+
     }
+}
+// function which adds new name to the database if it does not exists there
+private fun addDataIfNotExists(name: String) {
+    // check if name exists in database
+    if (!isNamePresent(name)) {
+        // app adds name when it did not find it in database
+        val contentValues = ContentValues().apply {
+            put("Name", name)
+            // score will be default
+        }
+        database.insert("Test", null, contentValues)
+    } else {
+        // name exists
+    }
+}
+
+//function which checks if name already exists in the database
+private fun isNamePresent(name: String): Boolean {
+    //define column which will be retrieved from database
+    val columns = arrayOf("Name")
+    //specify search criteria
+    val selection = "Name = ?"
+    //replace placeholder in selection
+    val selectionArgs = arrayOf(name)
+    //query database to find records matching criteria
+    val cursor = database.query("Test", columns, selection, selectionArgs, null, null, null)
+    // indicate presence of data by cursor movement
+    val exists = cursor.moveToFirst()
+    //release database resources
+    cursor.close()
+
+    return exists
 }
 @Composable
 fun DemoScreen(temperature: String) {
